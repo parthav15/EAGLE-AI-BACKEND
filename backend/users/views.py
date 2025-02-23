@@ -164,10 +164,7 @@ def edit_user_details_view(request):
     except CustomUser.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'User not found.'}, status=404)
 
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'message': 'Invalid JSON in request body.'}, status=400)
+    data = request.POST
     if data.get('first_name'):
         user.first_name = data.get('first_name')
     if data.get('last_name'):
@@ -212,7 +209,9 @@ def edit_profile_picture_view(request):
     try:
         user.profile_picture.save(uploaded_image.name, uploaded_image)
         user.save()
-        return JsonResponse({"success": True, "message": "Profile picture edited successfully."}, status=200)
+        user_details = model_to_dict(user, exclude=['password'])
+        user_details['profile_picture'] = str(user.profile_picture)
+        return JsonResponse({"success": True, "message": "Profile picture edited successfully.", "user_details": user_details}, status=200)
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error saving profile picture: {str(e)}'}, status=500)
 

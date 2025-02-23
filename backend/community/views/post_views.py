@@ -182,8 +182,13 @@ def update_post(request, post_id):
         except CustomUser.DoesNotExist:
             return JsonResponse({'success': False, 'message': 'User not found.'}, status=404)
 
-        title = request.POST.get('title')
-        content = request.POST.get('content')
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Invalid JSON in request body.'}, status=400)
+        
+        title = data.get('title')
+        content = data.get('content')
         
         if not title:
             return JsonResponse({'success': False, 'message': 'Title is required.'}, status=400)
